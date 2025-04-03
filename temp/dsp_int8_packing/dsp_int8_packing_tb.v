@@ -3,14 +3,14 @@
 module dsp_int8_packing_tb();
 
     // DUT input signals
-    reg clk;
+    reg                clk;
     reg         [ 7:0] a, b;
     reg         [ 7:0] c;
 
     // DUT output signals
-    wire signed [47:0] p;
-    wire signed [15:0] a_times_c;
-    wire signed [15:0] b_times_c;
+    wire signed [32:0] p;
+    wire signed [15:0] ac;
+    wire signed [15:0] bc;
 
     // Instantiate DUT
     dsp_int8_packing dut (
@@ -19,8 +19,8 @@ module dsp_int8_packing_tb();
         .b(b),
         .c(c),
         .p(p),
-        .a_times_c(a_times_c),
-        .b_times_c(b_times_c)
+        .ac(ac),
+        .bc(bc)
     );
 
     // Clock generator: 100 MHz
@@ -48,9 +48,9 @@ module dsp_int8_packing_tb();
     end
 
     task test_case(input [7:0] ta, tb, input signed [7:0] tc);
-        reg signed [15:0] expected_ac;
-        reg signed [15:0] expected_bc;
-        reg signed [47:0] expected_p;
+        reg signed [15:0] ex_ac;
+        reg signed [15:0] ex_bc;
+        reg signed [32:0] ex_p;
         begin
             @(posedge clk);
             a <= ta;
@@ -59,15 +59,15 @@ module dsp_int8_packing_tb();
             
             #(4*10)
             
-            expected_ac = ta * tc;
-            expected_bc = tb * tc;
-            expected_p  = (expected_ac <<< 8) + expected_bc;
+            ex_ac = ta * tc;
+            ex_bc = tb * tc;
+            ex_p  = (ex_ac <<< 8) + ex_bc;
 
-            $display("a=%d, b=%d, c=%d => a*c=%d, b*c=%d", ta, tb, tc, expected_ac, expected_bc);
-            $display(" DUT Output:   a*c = %d, b*c = %d, P = %d", a_times_c, b_times_c, p);
-            $display(" Expected P:   %d", expected_p);
+            $display(" a=%d, b=%d, c=%d => a*c=%d, b*c=%d", ta, tb, tc, ex_ac, ex_bc);
+            $display(" DUT Output:   a*c = %d, b*c = %d, P = %d", ac, bc, p);
+            $display(" Expected P:   %d", ex_p);
 
-            if (p !== expected_p)
+            if (p !== ex_p)
                 $display("ERROR: Mismatch!\n");
             else
                 $display("PASS\n");
